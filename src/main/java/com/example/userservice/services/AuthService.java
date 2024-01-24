@@ -6,6 +6,7 @@ import com.example.userservice.model.SessionStatus;
 import com.example.userservice.model.User;
 import com.example.userservice.repository.SessionRepository;
 import com.example.userservice.repository.UserRepository;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -121,10 +122,26 @@ public class AuthService {
 
     public SessionStatus validate(String token, Long userId) {
         Optional<Session> sessionOptional = sessionRepository.findByTokenAndUser_Id(token, userId);
+        System.out.println("sessionOptional: " + sessionOptional);
 
         if (sessionOptional.isEmpty()) {
             return null;
         }
+        /**
+         * Decode the JWT here.
+         */
+
+        MacAlgorithm alg = Jwts.SIG.HS256;
+        SecretKey key = alg.key().build();
+
+        Claims claims =
+                Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+
+        if(claims.isEmpty()){
+            System.out.println("CLAIM WAS EMPTY..."); // This is just a log
+            return null;
+        }
+
 
         return SessionStatus.ACTIVE;
     }

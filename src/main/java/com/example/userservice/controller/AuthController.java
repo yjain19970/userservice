@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -38,12 +40,16 @@ public class AuthController {
 
     /**
      * used to validate your token
+     *
      * @param request
      * @return
      */
     @PostMapping("/validate")
-    public ResponseEntity<SessionStatus> validateToken(ValidateTokenRequestDto request) {
+    public ResponseEntity<SessionStatus> validateToken(@RequestBody ValidateTokenRequestDto request) {
         SessionStatus sessionStatus = authService.validate(request.getToken(), request.getUserId());
+        if (Objects.isNull(sessionStatus)) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
 
         return new ResponseEntity<>(sessionStatus, HttpStatus.OK);
     }
