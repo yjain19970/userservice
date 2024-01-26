@@ -8,6 +8,7 @@ import com.example.userservice.repository.SessionRepository;
 import com.example.userservice.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMapAdapter;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,7 +125,6 @@ public class AuthService {
 
     public SessionStatus validate(String token, Long userId) {
         Optional<Session> sessionOptional = sessionRepository.findByTokenAndUser_Id(token, userId);
-        System.out.println("sessionOptional: " + sessionOptional);
 
         if (sessionOptional.isEmpty()) {
             return null;
@@ -134,8 +136,20 @@ public class AuthService {
         MacAlgorithm alg = Jwts.SIG.HS256;
         SecretKey key = alg.key().build();
 
+
         Claims claims =
                 Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+        /**
+         * ToDo: Save this key in application properties & fetch it using a bean in this file & sign & create token
+         * You do not have to generate the token everytime. Ideally token should be generated only once in lifetime.
+         *
+         *
+         * You can check also for
+         * If the token is not expired
+         * if the toke has speicifc detail, should be added here.
+         *
+         */
+
 
         if(claims.isEmpty()){
             System.out.println("CLAIM WAS EMPTY..."); // This is just a log
